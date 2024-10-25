@@ -49,11 +49,14 @@ end architecture;
 
 entity reg4 is
    port(d : in bit_vector(3 downto 0);
-        clk : in bit;
+        clk, ld : in bit;
         q : out bit_vector(3 downto 0));
 end entity reg4;
 
 architecture main of reg4 is
+
+	signal inputs  : bit_vector(3 downto 0);
+	signal outputs : bit_vector(3 downto 0);
 
    component ffd is
       port(d, clk: in bit;
@@ -62,8 +65,13 @@ architecture main of reg4 is
 begin
    
    ffs: for k in 0 to 3 generate
-      ff: ffd port map (d => d(k), clk => clk,
-         		q => q(k));
+		inputs(k) <= (outputs(k) and not(ld)) or (d(k) and ld);
+	
+	
+      ff: ffd port map (d => inputs(k), clk => clk,
+         		q => outputs(k));
    end generate ffs;
+	
+	q <= outputs;
    
 end architecture main;
