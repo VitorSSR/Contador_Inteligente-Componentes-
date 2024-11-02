@@ -11,6 +11,7 @@ entity ContadorMain is
 end ContadorMain;
 
 architecture main of ContadorMain is
+
 	--Somador Subtrator BCD CDU
 	Component SomSubBCD is
 		port(
@@ -19,13 +20,26 @@ architecture main of ContadorMain is
 		Cent,Deze,Unid: out std_logic_vector(3 downto 0)
 		);
 	end Component;
-	--Comparador_magnitude_12b
-	Component comparador_magnitude_12b is
+
+
+	--Comparador_magnitude_12b_soma
+	Component comparador_mag_soma is
 		port(
 			A_comparacao, B_comparacao: IN std_logic_vector(11 downto 0);
-			AigualB, AmaiorB, AmenorB: OUT std_logic
+			AigualB, AmaiorB_overflow, AmenorB: OUT std_logic
 		);
 	end Component;
+
+
+	--Comparador_magnitude_12b_subtracao
+	Component comparador_mag_subtracao is
+		port(
+			A_comparacao, B_comparacao: IN std_logic_vector(11 downto 0);
+			AigualB, AmaiorB, AmenorB_overflow: OUT std_logic
+		);
+	end Component;
+
+
 	--Filtro Mx/Mn
 	Component inptctrl is
 		 port (load: in std_logic;
@@ -35,6 +49,8 @@ architecture main of ContadorMain is
 				 load_min: out std_logic;
 				 load_max: out std_logic);
 	end Component;
+
+
 	--Registradores Mx Mn e Step
 	Component circ_reg is
 		port (ld, step, max_min, clk : in bit;
@@ -42,6 +58,8 @@ architecture main of ContadorMain is
 				mx_reg, mi_reg         : out bit_vector(11 downto 0);
 				st_reg                 : out bit_vector(3 downto 0));
 	end entity Component;
+
+
 	--Registrador de 4 bits
 	Component reg4 is
 		port(d : in bit_vector(3 downto 0);
