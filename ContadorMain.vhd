@@ -23,21 +23,13 @@ architecture main of ContadorMain is
 
 
 	--Comparador_magnitude_12b_soma
-	Component comparador_mag_soma is
+	Component comparador_mag is
 		port(
 			A_comparacao, B_comparacao: IN std_logic_vector(11 downto 0);
-			AigualB, AmaiorB_overflow, AmenorB: OUT std_logic
+			AigualB, AmaiorB, AmenorB: OUT std_logic
 		);
 	end Component;
 
-
-	--Comparador_magnitude_12b_subtracao
-	Component comparador_mag_subtracao is
-		port(
-			A_comparacao, B_comparacao: IN std_logic_vector(11 downto 0);
-			AigualB, AmaiorB, AmenorB_overflow: OUT std_logic
-		);
-	end Component;
 
 
 	--Filtro Mx/Mn
