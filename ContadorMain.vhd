@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 entity ContadorMain is
 	port(
 	A2,A1,A0,STEP :  in std_logic_vector(3 downto 0);
-	ld, max_min, clk, updown: in std_logic;
+	load_button, clock_button, max_min_button, updown_button: in std_logic;
 	Cent,Deze,Unid: out std_logic_vector(3 downto 0)
 	);
 
@@ -65,7 +65,7 @@ architecture main of ContadorMain is
 
 	--Registrador
 
-	Component registrador is
+	Component registrador_2 is
 		port(
 			clk : in std_logic;
 			clr : in std_logic_vector(3 downto 0);
@@ -103,11 +103,11 @@ architecture main of ContadorMain is
 
 
 
-signal step_button, max_min_button, clear_button, load_button, clock_button, AigualB, AmaiorB, AmaiorB_overflow, AmenorB, AmenorB_overflow : std_logic;
+signal step_button, clear_button, AigualB_maximo, AmenorB_maximo,  AigualB_minimo, AmaiorB_minimo, AmaiorB_overflow, AmenorB_overflow : std_logic;
 
 signal  saida_somador_BCD, saida_registrador_maximo, saida_registrador_minimo: std_logic_vector (11 downto 0);
 
-signal  centena,dezena,unidade, saida_mux_min_unidade, saida_mux_min_dezena, saida_mux_min_centena, saida_mux_max_unidade, saida_mux_max_dezena, saida_mux_max_centena, entrada_bcd_centena, entrada_bcd_dezena, entrada_bcd_unidade: std_logic_vector (3 downto 0);
+signal   centena,dezena,unidade, saida_mux_min_unidade, saida_mux_min_dezena, saida_mux_min_centena, saida_mux_max_unidade, saida_mux_max_dezena, saida_mux_max_centena, entrada_bcd_centena, entrada_bcd_dezena, entrada_bcd_unidade: std_logic_vector (3 downto 0);
 
 signal saida_registador_maximo_centena, saida_registador_maximo_dezena, saida_registador_maximo_unidade, saida_registador_minimo_centena, saida_registador_minimo_dezena, saida_registador_minimo_unidade, saida_registador_step: std_logic_vector (3 downto 0);
 
@@ -153,23 +153,24 @@ clear_intermediario <= ('0','0','0','0');
 
 
 
-registrador_intermediario_centena: registrador port map (clock_button, clear_intermediario, set_intermediario, saida_mux_max_centena, saida_registrador_intermediario_centena);
+registrador_intermediario_centena: registrador_2 port map (clock_button, clear_intermediario, set_intermediario, saida_mux_max_centena, saida_registrador_intermediario_centena);
 
 
-registrador_intermediario_dezena: registrador port map (clock_button, clear_intermediario, set_intermediario, saida_mux_max_dezena, saida_registrador_intermediario_dezena);
+registrador_intermediario_dezena: registrador_2 port map (clock_button, clear_intermediario, set_intermediario, saida_mux_max_dezena, saida_registrador_intermediario_dezena);
 
 
-registrador_intermediario_unidade: registrador port map (clock_button, clear_intermediario, set_intermediario, saida_mux_max_unidade, saida_registrador_intermediario_unidade);
+registrador_intermediario_unidade: registrador_2 port map (clock_button, clear_intermediario, set_intermediario, saida_mux_max_unidade, saida_registrador_intermediario_unidade);
 
 
 
 --soma/subtracao
-somador_subtrator: SomSubBCD port map(saida_registrador_intermediario_centena, saida_registrador_intermediario_dezena, saida_registrador_intermediario_unidade, saida_registador_step,updown, centena, dezena, unidade);
+somador_subtrator: SomSubBCD port map(saida_registrador_intermediario_centena, saida_registrador_intermediario_dezena, saida_registrador_intermediario_unidade, saida_registador_step, updown_button, centena, dezena, unidade);
 
 
 
 
 --vetor para saída do somador bcd
+
 saida_somador_BCD(11 downto 8)<= centena;
 
 saida_somador_BCD(7 downto 4) <= dezena;
@@ -178,30 +179,30 @@ saida_somador_BCD(3 downto 0) <= unidade;
 
 
 
-comparar_maximo: comparador_mag_soma port map (saida_somador_BCD, saida_registrador_maximo, AigualB, AmaiorB_overflow, AmenorB); --COMPARADOR MÁXIMO
+comparar_maximo: comparador_mag_soma port map (saida_somador_BCD, saida_registrador_maximo, AigualB_maximo, AmaiorB_overflow, AmenorB_maximo); --COMPARADOR MÁXIMO
 
-comparar_minimo: comparador_mag_subtracao port map (saida_somador_BCD, saida_registrador_minimo, AigualB, AmaiorB, AmenorB_overflow);  --COMPARADOR MINIMO
+comparar_minimo: comparador_mag_subtracao port map (saida_somador_BCD, saida_registrador_minimo, AigualB_minimo, AmaiorB_minimo, AmenorB_overflow);  --COMPARADOR MINIMO
 
 
 
 --os 3 mux que pegam o valor minimo
 
-mux_4x1_minimo_unidade: mux2x1_4b port map (saida_somador_BCD(3 downto 0), saida_registador_minimo_unidade, AmaiorB_overflow, saida_mux_min_unidade);
+mux_4x1_minimo_unidade: mux2x1_4b port map (unidade , saida_registador_minimo_unidade, AmaiorB_overflow, saida_mux_min_unidade);
 
-mux_4x1_minimo_dezena: mux2x1_4b port map (saida_somador_BCD(7 downto 4), saida_registador_minimo_dezena , AmaiorB_overflow, saida_mux_min_dezena);
+mux_4x1_minimo_dezena: mux2x1_4b port map (dezena , saida_registador_minimo_dezena, AmaiorB_overflow, saida_mux_min_dezena);
 
-mux_4x1_minimo_centena: mux2x1_4b port map (saida_somador_BCD(11 downto 8), saida_registador_minimo_centena , AmaiorB_overflow, saida_mux_min_centena);
+mux_4x1_minimo_centena: mux2x1_4b port map (centena, saida_registador_minimo_centena , AmaiorB_overflow, saida_mux_min_centena);
 
 
 
 
 --os 3 mux que pegam o valor maximo
 
-mux_4x1_maximo_unidade: mux2x1_4b port map (saida_somador_BCD(3 downto 0), saida_registador_maximo_unidade, AmenorB_overflow, saida_mux_max_unidade);
+mux_4x1_maximo_unidade: mux2x1_4b port map (saida_mux_min_unidade, saida_registador_maximo_unidade, AmenorB_overflow, saida_mux_max_unidade);
 
-mux_4x1_maximo_dezena: mux2x1_4b port map (saida_somador_BCD(7 downto 4), saida_registador_maximo_dezena , AmenorB_overflow, saida_mux_max_dezena);
+mux_4x1_maximo_dezena: mux2x1_4b port map (saida_mux_min_dezena, saida_registador_maximo_dezena , AmenorB_overflow, saida_mux_max_dezena);
 
-mux_4x1_maximo_centena: mux2x1_4b port map (saida_somador_BCD(11 downto 8), saida_registador_maximo_centena , AmenorB_overflow, saida_mux_max_centena);
+mux_4x1_maximo_centena: mux2x1_4b port map (saida_mux_min_centena, saida_registador_maximo_centena , AmenorB_overflow, saida_mux_max_centena);
 
 
 
@@ -223,5 +224,12 @@ decoder_bcd_dezena: DecoderBCD port map (entrada_bcd_dezena, saida_bcd_dezena);
 
 decoder_bcd_unidade: DecoderBCD port map (entrada_bcd_unidade, saida_bcd_unidade);
 
+
+
+Cent <= centena;
+
+Deze <= dezena;
+
+Unid <= unidade;
 
 end main;
